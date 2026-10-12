@@ -38,7 +38,7 @@ for f in files:
     else:
         rows.append(f'<li><a href="{q}">{name}</a></li>')
 
-links = []
+links = []  # (title, url)
 if os.path.exists('links.txt'):
     with open('links.txt', encoding='utf-8') as fh:
         for line in fh:
@@ -46,9 +46,11 @@ if os.path.exists('links.txt'):
             if not line or line.startswith('#') or '|' not in line:
                 continue
             title, url = (x.strip() for x in line.split('|', 1))
-            links.append(f'<li><a href="{html.escape(url)}" target="_blank">{html.escape(title)}</a></li>')
+            links.append((title, url))
 
-links_html = f'<h2>連結</h2>\n<ul>\n{chr(10).join(links)}\n</ul>\n<h2>檔案</h2>\n' if links else ''
+link_items = [f'<li><a href="{html.escape(url)}" target="_blank">{html.escape(title)}</a></li>'
+              for title, url in links]
+links_html = f'<h2>連結</h2>\n<ul>\n{chr(10).join(link_items)}\n</ul>\n<h2>檔案</h2>\n' if links else ''
 
 page = f'''<!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
@@ -68,6 +70,22 @@ li{{margin:1rem 0}} img{{max-width:100%;max-height:320px;margin-top:.4rem;border
 with open('index.html', 'w', encoding='utf-8') as fh:
     fh.write(page)
 print(f'index.html 已更新（{len(files)} 個檔案）')
+
+# 更新 README.md 中 <!-- links:start --> 與 <!-- links:end --> 之間的連結清單
+START, END = '<!-- links:start -->', '<!-- links:end -->'
+if os.path.exists('README.md'):
+    with open('README.md', encoding='utf-8') as fh:
+        readme = fh.read()
+    if START in readme and END in readme:
+        md = '\n'.join(f'- [{title}]({url})' for title, url in links)
+        head, rest = readme.split(START, 1)
+        tail = rest.split(END, 1)[1]
+        new_readme = f'{head}{START}\n{md}\n{END}{tail}'
+        if new_readme != readme:
+            with open('README.md', 'w', encoding='utf-8') as fh:
+                fh.write(new_readme)
+        print(f'README.md 連結已更新（{len(links)} 個連結）')
+
 
 if '--push' in sys.argv:
     subprocess.run(['git', 'add', '-A'], check=True)

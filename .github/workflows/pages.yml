@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -24,6 +24,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Generate index.html
         run: python3 update_index.py
+      - name: Commit README if links changed
+        run: |
+          if ! git diff --quiet README.md; then
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git commit -m "Update README links from links.txt" README.md
+            git push
+          fi
       - name: Prepare site
         run: |
           mkdir -p _site

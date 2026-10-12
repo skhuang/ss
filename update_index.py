@@ -13,7 +13,7 @@ import urllib.parse
 
 BASE_URL = 'https://skhuang.github.io/ss/'
 IMAGE_EXTS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
-EXCLUDE = {'index.html', 'update_index.py'}
+EXCLUDE = {'index.html', 'update_index.py', 'links.txt'}
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,6 +38,18 @@ for f in files:
     else:
         rows.append(f'<li><a href="{q}">{name}</a></li>')
 
+links = []
+if os.path.exists('links.txt'):
+    with open('links.txt', encoding='utf-8') as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith('#') or '|' not in line:
+                continue
+            title, url = (x.strip() for x in line.split('|', 1))
+            links.append(f'<li><a href="{html.escape(url)}" target="_blank">{html.escape(title)}</a></li>')
+
+links_html = f'<h2>連結</h2>\n<ul>\n{chr(10).join(links)}\n</ul>\n<h2>檔案</h2>\n' if links else ''
+
 page = f'''<!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -47,7 +59,7 @@ body{{font-family:system-ui,sans-serif;max-width:860px;margin:2rem auto;padding:
 li{{margin:1rem 0}} img{{max-width:100%;max-height:320px;margin-top:.4rem;border-radius:6px}}
 </style></head><body>
 <h1>檔案列表</h1>
-<ul>
+{links_html}<ul>
 {chr(10).join(rows)}
 </ul>
 </body></html>

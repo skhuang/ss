@@ -13,7 +13,7 @@ import urllib.parse
 
 BASE_URL = 'https://skhuang.github.io/ss/'
 IMAGE_EXTS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
-EXCLUDE = {'index.html', 'update_index.py', 'links.txt'}
+EXCLUDE = {'index.html', 'update_index.py', 'links.txt', 'README.md'}
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
